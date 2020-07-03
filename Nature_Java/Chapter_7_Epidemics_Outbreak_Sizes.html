@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=, initial-scale=1.0">
+    <title>Document</title>
+
+    <script src="https://d3js.org/d3.v5.min.js"></script> 
+
+</head>
+<body>
+    <script>
+
+        // Susceptible infected recoverd SIR model
+        var grid_length = 100; // a 100 x 100 grid
+        var grid = [];
+        var temp_grid = []; // store temporary grid
+
+        var beta = 0.05; // per time unit and per contact transmission probability
+        var gamma = 0.15;// per time step probability that an infected individual recovers
+        var rewiring_probability = 0.01; // sall world > 0 normal neighbouring contact = 0
+        var number_of_simulations = 100;
+        var data = [];
+
+        function get_random_int(min, max){
+            return Math.floor(Math.random() * (max - min + 1)) + min; // should start from min
+        }
+        function init_grid(){
+            for (var i = 0; i < grid_length; i = i + 1){
+                grid[i] = [];
+                for (var ii = 0; ii < grid_length; ii = ii + 1){
+                    grid[i][ii] = 'S'; // susceptible
+                }
+            }
+            // pick a random individual to be affected
+            grid[get_random_int(0, grid_length-1)][get_random_int(0, grid_length-1)] = 'I'; // infected
+        }
+
+        function run_time_step(){
+            for (var i = 0; i < grid_length; i = i + 1){
+                temp_grid[i] = [];
+                for (var ii = 0; ii < grid_length; ii = ii + 1){
+                    temp_grid[i][ii] = grid[i][ii]; // store in temporary grid
+                }
+            }
+            // assume the neighbours are the contacts.
+            // every individual has 8 contacts
+            for (var i = 0; i < grid_length; i = i + 1){
+                for (var ii = 0; ii < grid_length; ii = ii + 1){
+                    if (grid[i][ii] == 'I'){
+                        expose_neighbors(i,ii);
+                        try_recovery(i,ii);
+                    }
+                }
+            }
+            for (var i = 0; i < grid_length; i = i + 1){
+                for (var ii = 0; ii < grid_length; ii = ii + 1){
+                    grid[i][ii] = temp_grid[i][ii]; // updata the grid
+                }
+            }
+        }
+
+        function get_bounded_index(index){
+            var bounded_index = index; // default case when the index is corrext
+            if (index < 0){ // correct index to tackle boundary issue.
+                bounded_index = index + grid_length;
+            }
+            if (index >= grid_length){
+                bounded_index = index - grid_length;
+            }
+            return bounded_index;
+        }
+
+        function expose_neighbors(i,ii){ // location of the individual infected
+            for (var n_i = i - 1; n_i <= i + 1; n_i = n_i + 1){
+                for (var n_ii = ii - 1; n_ii <= ii + 1; n_ii = n_ii + 1){ // n_i n_ii location of neighbor
+                    if (n_i == i && n_ii == ii){
+                        continue;
+                    }
+                    // small world, long distance transmision
+                    if (Math.random() < rewiring_probability){ // randomly pick another individual, start new clusters
+                        var random_i = get_random_int(0, grid_length-1);
+                        var random_ii = get_random_int(0, grid_length-1);
+                        try_infection(random_i, random_ii);
+                    }
+                    else {
+                        try_infection(get_bounded_index (n_i), get_bounded_index (n_ii));
+                    }
+                    
+                }
+            }
+        }
+
+        function try_infection(i, ii){
+            if (grid[i][ii] == 'S'){
+                if (Math.random() < beta){ // bata: infected probability
+                    temp_grid[i][ii] = 'I';
+                }
+            }           
+        }
+
+        function try_recovery(i, ii){
+            if (grid[i][ii] == 'I'){ // double check the individual is the infected one
+                if (Math.random() < gamma){ // gama: recover probability
+                    temp_grid[i][ii] = 'R';
+                }
+            }           
+        }
+
+        function get_number_in_state(state) {
+            var number_in_state = 0;
+            for (var i = 0; i < grid_length; i = i + 1){
+                for (var ii = 0; ii < grid_length; ii = ii + 1){
+                    if (grid[i][ii] == state){
+                        number_in_state = number_in_state + 1;
+                    }
+                }
+            }
+            return number_in_state;
+        }
+
+        function get_number_of_infected(){
+            return get_number_in_state('I');
+        }
+
+        function get_number_of_susceptibles(){
+            return get_number_in_state('S');
+        }
+
+        function get_number_of_recoverd(){
+            return get_number_in_state('R');
+        }
+
+        function run_simulation(){
+            init_grid();
+            while (get_number_of_infected() > 0) {
+                run_time_step();
+           }
+        }
+
+        for (var i = 0; i < number_of_simulations; i = i + 1){
+            run_simulation();
+            data.push(get_number_of_recoverd());
+        }
+
+        function calculate_average_size(data){
+            var sum = 0;
+            for (var i = 0; i < data.length; i++){
+                sum += data[i];
+            }
+            return sum / data.length;
+        }
+
+        console.log(calculate_average_size(data));
+
+    </script>
+</body>
+</html>

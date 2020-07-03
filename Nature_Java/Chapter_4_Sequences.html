@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <script>
+
+        var number_of_sequences = 100;
+        var sequence_length = 20;
+        var original_sequence = [];
+        var sequences = []; // population
+
+        function generate_first_generation(){
+            generate_first_sequence();
+            for (var i = 0; i < number_of_sequences; i = i + 1){
+                sequences.push(original_sequence.slice());
+            }
+            
+        }
+
+        function generate_first_sequence(){
+            for (var i = 0; i < sequence_length; i = i + 1){
+                original_sequence.push(random_base());
+            }
+        }
+
+        function random_base(){
+            var bases = ['A', 'G', 'C','T']
+            var index = Math.floor(Math.random() * 4);
+            return bases[index];
+        }
+
+        function print_sequences(){
+            for (var i = 0; i < number_of_sequences; i = i + 1){
+                print_sequence(sequences[i]);
+            }
+        }
+
+        function print_sequence(sequence){
+            var sequence_string = '';
+            for (var i = 0; i < sequence.length; i = i + 1){
+                sequence_string = sequence_string + sequence[i];
+            }
+            console.log(sequence_string);
+        }
+
+        generate_first_generation();
+        print_sequences();
+    </script>
+</body>
+</html>

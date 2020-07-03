@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <script>
+        var p = 0.5;
+        var N = 1000;
+        var generations = 1000;
+
+        function next_generation(){
+            var draws = 2 * N;
+            var a1 = 0;
+            var a2 = 0;
+            for(var i = 0; i < draws; i = i + 1){
+                if(Math.random() <= p){
+                    a1 = a1 + 1;
+                }
+                else{
+                    a2 = a2 + 1;
+                }
+            }
+            p = a1 / draws;
+        }
+        function round_number(value,decimals){
+        var shifter = Math.pow(10,decimals);
+        return Math.round(value * shifter) / shifter;
+        }
+
+        for (var i = 0; i < generations; i = i + 1){
+           next_generation();
+           console.log('Generation' + i, round_number(p,4), round_number(1-p,4)); 
+        }
+    </script>
+</body>
+</html>

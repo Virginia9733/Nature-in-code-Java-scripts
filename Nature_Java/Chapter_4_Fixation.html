@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=8, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <script>
+        var N = 100;
+        var p;
+        var simulations = 10000;
+        var fixations_of_mutant = 0;
+
+        function next_generation(){
+            var draws = 2 * N;
+            var a1 = 0;
+            var a2 = 0;
+            for (var i = 0; i < draws; i = i + 1){
+                if(Math.random() <= p){
+                    a1 = a1 + 1;
+                }
+                else{
+                    a2 = a2 + 1;
+                }
+            }
+            p = a1 / draws;
+        }
+
+        function run_until_fixation(){
+            p = 1 / (2 * N);
+            do {
+                next_generation();
+            } while (p > 0 && p < 1);
+
+            if (p == 1){
+                fixations_of_mutant = fixations_of_mutant + 1;
+            }
+        }
+
+        for (var i = 0; i < simulations; i = i + 1){
+                run_until_fixation();
+        }
+
+        console.log(fixations_of_mutant / simulations);
+        
+    </script>
+
+</body>
+</html>
